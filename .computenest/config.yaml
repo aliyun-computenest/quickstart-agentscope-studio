@@ -60,7 +60,9 @@ ImageBuilder:
     CommandContent: |-
         #!/bin/bash
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-        sudo source ~/.bashrc
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # 立即加载 NVM
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # 加载自动补全
         sudo nvm install --lts
         sudo npm install -g @agentscope/studio
 

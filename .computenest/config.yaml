@@ -1,0 +1,89 @@
+Service:
+  DeployType: ros
+  DeployMetadata:
+    SupplierDeployMetadata:
+      DeployTimeout: 7200
+      ArtifactRelation:
+        centos_7_9_x64_20G_alibase_20240403.vhd:
+          ArtifactId: ${Artifact.Artifact_1.ArtifactId}
+          ArtifactVersion: ${Artifact.Artifact_1.ArtifactVersion}
+      SupplierTemplateConfigs:
+        - Name: 模板1
+          Url: ros_templates/template.yaml
+          PredefinedParameters: []
+    TemplateConfigs:
+      - Name: 模板1
+        Url: ros_templates/template.yaml
+        PredefinedParameters: []
+        DeployScene: ECS
+        OutputConfigs:
+          - OutputKey: Server Addresses
+            EnableWebProxy: true
+          - OutputKey: Server Private Addresses
+            EnableWebProxy: true
+    NetworkMetadata:
+      EnablePrivateVpcConnection: false
+      EnableReversePrivateVpcConnection: false
+    ServiceInstanceNameRule:
+      UseDefaultValue: false
+  OperationMetadata:
+    SupportBackup: false
+    PrometheusConfigMap:
+      模板1:
+        EnablePrometheus: false
+  ServiceType: private
+  ServiceInfo:
+    Locale: zh-CN
+    ShortDescription: AgentScope Studio 是一个强大的本地可视化工具包，用于开发代理应用程序，支持项目管理、运行时可视化、跟踪和代理评估。
+    Image: resources/icons/service_logo.png
+    Name: AgentScopeStudio社区版
+  ShareType: Public
+  ApprovalType: Manual
+Artifact:
+  Artifact_1:
+    ArtifactType: EcsImage
+    ArtifactName: agentscopestudio
+    Description: agentscopestudio
+    ArtifactProperty:
+      RegionId: ${ImageBuilder.EcsImage.RegionId}
+      ImageId: ${ImageBuilder.EcsImage.SourceImageId}
+ImageBuilder:
+  EcsImage:
+    RegionId: ap-southeast-1
+    SourceImageId: ubuntu_24_04_x64_20G_alibase_20250916.vhd
+    SystemDiskSize: 40
+    InstanceType: ecs.c7.2xlarge
+    InternetMaxBandwidthOut: 100
+    CommandType: RunShellScript
+    Timeout: 10800
+    Tags: [ ]
+    CommandContent: |-
+        #!/bin/bash
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+        source ~/.bashrc
+        nvm install --lts
+        npm install -g @agentscope/studio
+
+        cat > /usr/lib/systemd/system/agentscopestudio.service << SERVICE_EOF
+        [Unit]
+        Description=Application init service
+        Wants=cloud-final.service
+        Requires=network-online.target
+        After=network-online.target cloud-final.service
+
+        [Service]
+        Environment="PATH=/root/.nvm/versions/node/v22.21.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        ExecStart=/root/.nvm/versions/node/v22.21.0/bin/as_studio
+        RemainAfterExit=false
+        KillMode=control-group
+        Restart=Always
+        WorkingDirectory=/root
+
+        [Install]
+        WantedBy=multi-user.target
+
+        SERVICE_EOF
+
+        sudo systemctl daemon-reload
+        sudo systemctl enable agentscopestudio.service
+        sudo systemctl start agentscopestudio.service

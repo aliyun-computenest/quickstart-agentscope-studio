@@ -60,11 +60,11 @@ ImageBuilder:
     CommandContent: |-
         #!/bin/bash
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-        source ~/.bashrc
-        nvm install --lts
-        npm install -g @agentscope/studio
+        sudo source ~/.bashrc
+        sudo nvm install --lts
+        sudo npm install -g @agentscope/studio
 
-        cat > /usr/lib/systemd/system/agentscopestudio.service << SERVICE_EOF
+        sudo cat > /usr/lib/systemd/system/agentscopestudio.service << SERVICE_EOF
         [Unit]
         Description=Application init service
         Wants=cloud-final.service

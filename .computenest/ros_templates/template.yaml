@@ -182,8 +182,8 @@ Parameters:
   EnablePublicIp:
     Type: Boolean
     Label:
-      en: Whether Enable Public IP
-      zh-cn: 是否开启公网IP
+      en: Whether Enable Public
+      zh-cn: 是否开启公网
     Default: true
   ZoneId:
     Type: String

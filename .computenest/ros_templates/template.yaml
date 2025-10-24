@@ -311,7 +311,18 @@ Resources:
           - 0
       IoOptimized: optimized
       MaxAmount: 1
-
+  RunInstallCommand:
+    Type: ALIYUN::ECS::RunCommand
+    Properties:
+      InstanceIds:
+        Fn::GetAtt:
+        - InstanceGroup
+        - InstanceIds
+      Type: RunShellScript
+      Sync: true
+      Timeout: 3600
+      CommandContent: |-
+          systemctl start agentscopestudio
 Outputs:
   Server Addresses:
     Description:

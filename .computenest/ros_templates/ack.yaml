@@ -1,0 +1,683 @@
+ROSTemplateFormatVersion: '2015-09-01'
+Description:
+  zh-cn: 创建 AgentScope Studio 服务器
+  en: Create AgentScope Studio server.
+Parameters:
+  VpcOption:
+    Type: String
+    AllowedValues:
+      - NewVPC
+      - ExistingVPC
+    AssociationPropertyMetadata:
+      ValueLabelMapping:
+        NewVPC:
+          zh-cn: 新建专有网络
+          en: New VPC
+        ExistingVPC:
+          zh-cn: 已有专有网络
+          en: Existing VPC
+    Label:
+      en: Select Existing or New VPC
+      zh-cn: 选择已有/新建的专有网络
+    Required: true
+    Default: NewVPC
+  AutoScalingOption:
+    Type: Boolean
+    Label:
+      en: Whether to enable automatic elastic scaling of a node pool.
+      zh-cn: 节点池是否启用自动弹性伸缩
+    Description:
+      zh-cn: 节点池若开启自动弹性伸缩，付费方式只能选择按量付费
+      en: If automatic elastic expansion is enabled for a node pool, the payment mode can only be Postpaid
+    Default: false
+  AckNetworkPlugin:
+    Type: String
+    Label:
+      en: ACK plugin network
+      zh-cn: ACK 网络插件
+    AllowedValues:
+      - terway
+      - flannel
+    Default: terway
+  PayType:
+    Type: String
+    Label:
+      en: ECS Instance Charge Type
+      zh-cn: 付费类型
+    Default: PostPaid
+    AllowedValues:
+      - PostPaid
+      - PrePaid
+    AssociationProperty: ChargeType
+    AssociationPropertyMetadata:
+      LocaleKey: InstanceChargeType
+      AllowedValues:
+        - Condition:
+            Fn::Equals:
+              - ${AutoScalingOption}
+              - false
+          Value:
+            - PostPaid
+            - PrePaid
+        - Condition:
+            Fn::Equals:
+              - ${AutoScalingOption}
+              - true
+          Value:
+            - PostPaid
+  PayPeriodUnit:
+    Type: String
+    Label:
+      en: Pay Period Unit
+      zh-cn: 购买资源时长周期
+    Default: Month
+    AllowedValues:
+      - Month
+      - Year
+    AssociationProperty: PayPeriodUnit
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Not:
+            Fn::Equals:
+              - ${PayType}
+              - PostPaid
+  PayPeriod:
+    Type: Number
+    Label:
+      en: Period
+      zh-cn: 购买资源时长
+    Default: 1
+    AllowedValues:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+    AssociationProperty: PayPeriod
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Not:
+            Fn::Equals:
+              - ${PayType}
+              - PostPaid
+  VpcCidrBlock:
+    Type: String
+    Label:
+      en: VPC CIDR IPv4 Block
+      zh-cn: 专有网络IPv4网段
+    Description:
+      zh-cn: VPC的ip地址段范围，<br>您可以使用以下的ip地址段或其子网:<br><font color='green'>[10.0.0.0/8]</font><br><font color='green'>[172.16.0.0/12]</font><br><font color='green'>[192.168.0.0/16]</font>
+      en: 'The ip address range of the VPC in the CidrBlock form; <br>You can use the following ip address ranges and their subnets: <br><font color=''green''>[10.0.0.0/8]</font><br><font color=''green''>[172.16.0.0/12]</font><br><font color=''green''>[192.168.0.0/16]</font>'
+    Default: 192.168.0.0/16
+    Required:
+      Fn::Equals:
+        - NewVPC
+        - ${VpcOption}
+    AssociationProperty: ALIYUN::VPC::VPC::CidrBlock
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - NewVPC
+            - ${VpcOption}
+  VSwitchCidrBlock1:
+    Type: String
+    Label:
+      en: VSwitch CIDR Block
+      zh-cn: 交换机子网网段1
+    Description:
+      zh-cn: 必须属于VPC的子网段。
+      en: Must belong to the subnet segment of VPC.
+    Default: 192.168.0.0/24
+    Required:
+      Fn::Equals:
+        - NewVPC
+        - ${VpcOption}
+    AssociationProperty: ALIYUN::VPC::VSwitch::CidrBlock
+    AssociationPropertyMetadata:
+      VpcCidrBlock: VpcCidrBlock
+      Visible:
+        Condition:
+          Fn::Equals:
+            - NewVPC
+            - ${VpcOption}
+  VSwitchCidrBlock2:
+    Type: String
+    Label:
+      en: VSwitch CIDR Block
+      zh-cn: 交换机子网网段2
+    Description:
+      zh-cn: 必须属于VPC的子网段。
+      en: Must belong to the subnet segment of VPC.
+    Default: 192.168.1.0/24
+    Required:
+      Fn::Equals:
+        - NewVPC
+        - ${VpcOption}
+    AssociationProperty: ALIYUN::VPC::VSwitch::CidrBlock
+    AssociationPropertyMetadata:
+      VpcCidrBlock: VpcCidrBlock
+      Visible:
+        Condition:
+          Fn::Equals:
+            - NewVPC
+            - ${VpcOption}
+  PodCidr:
+    Type: String
+    Description:
+      zh-cn: 请填写有效的私有网段，即以下网段及其子网：10.0.0.0/8，172.16-31.0.0/12-16，192.168.0.0/16<br>不能与 VPC 及 VPC 内已有 Kubernetes 集群使用的网段重复。<font color='blue'><b>创建成功后不能修改</b></font>
+      en: 'Please fill in a valid private segment, i.e. the following segments and their subnets: 10.0.0.0/8, 172.16-31.0.0/12-16, 192.168.0.0/16<br> which cannot duplicate the network segments already used by clusters in VPC and VPC Kunetberes. <font color=''blue''><b>Cannot be modified after successful creation</b></font>'
+    Label:
+      zh-cn: Pod 网络 CIDR
+      en: Pod Network CIDR
+    AssociationProperty: ALIYUN::CS::ManagedKubernetesCluster::PodCidr
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${AckNetworkPlugin}
+            - flannel
+    Default: 172.20.0.0/20
+  ServiceCidr:
+    Type: String
+    Description:
+      zh-cn: 可选范围：10.0.0.0/16-24，172.16-31.0.0/16-24，192.168.0.0/16-24<br>不能与 VPC 及 VPC 内已有 Kubernetes 集群使用的网段重复。<font color='blue'><b>创建成功后不能修改</b></font>
+      en: 'Optional range: 10.0.0.0/16-24, 172.16-31.0.0/16-24, 192.168.0.0/16-24<br> cannot duplicate segments already used by existing Kubernetes clusters in VPC and VPC.<font color=''blue''><b>Cannot be modified after successful creation</b></font>'
+    Label:
+      zh-cn: Service CIDR
+      en: Service CIDR
+    AssociationProperty: ALIYUN::CS::ManagedKubernetesCluster::ServiceCidr
+    AssociationPropertyMetadata:
+      ClusterType: ManagedKubernetes
+      VpcId: ${VpcId}
+      ContainerCidr: ${PodCidr}
+      Addons:
+        - name: flannel
+    Default: 172.16.0.0/16
+  ZoneId1:
+    Type: String
+    AssociationProperty: ALIYUN::ECS::Instance::ZoneId
+    AssociationPropertyMetadata:
+      ExclusiveTo:
+        - ZoneId2
+    Label:
+      en: Availability Zone
+      zh-cn: 可用区1
+  ZoneId2:
+    Type: String
+    AssociationProperty: ALIYUN::ECS::Instance::ZoneId
+    AssociationPropertyMetadata:
+      ExclusiveTo:
+        - ZoneId1
+    Label:
+      en: Availability Zone
+      zh-cn: 可用区2
+  VpcId:
+    Type: String
+    Label:
+      en: VPC ID
+      zh-cn: 专有网络VPC实例ID
+    Description: <br> <font color='red'>如果选择“已有容器集群”, 此VPC务必选择有容器集群所在的VPC<br><font>
+    AssociationProperty: ALIYUN::ECS::VPC::VPCId
+    Required:
+      Fn::Equals:
+        - ${VpcOption}
+        - ExistingVPC
+    Default: ''
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${VpcOption}
+            - ExistingVPC
+  VSwitchId1:
+    Type: String
+    Label:
+      en: VSwitch ID
+      zh-cn: 交换机实例ID
+    Default: ''
+    AssociationProperty: ALIYUN::ECS::VSwitch::VSwitchId
+    Required:
+      Fn::Equals:
+        - ${VpcOption}
+        - ExistingVPC
+    AssociationPropertyMetadata:
+      VpcId: VpcId
+      ZoneId: ZoneId1
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${VpcOption}
+            - ExistingVPC
+  VSwitchId2:
+    Type: String
+    Label:
+      en: VSwitch ID
+      zh-cn: 交换机实例ID
+    Default: ''
+    AssociationProperty: ALIYUN::ECS::VSwitch::VSwitchId
+    Required:
+      Fn::Equals:
+        - ${VpcOption}
+        - ExistingVPC
+    AssociationPropertyMetadata:
+      VpcId: VpcId
+      ZoneId: ZoneId2
+      Visible:
+        Condition:
+          Fn::Equals:
+            - ${VpcOption}
+            - ExistingVPC
+  InstanceType:
+    Type: CommaDelimitedList
+    Default:
+      - ecs.u1-c1m2.xlarge
+    AssociationProperty: ALIYUN::ECS::Instance::InstanceType
+    AssociationPropertyMetadata:
+      CreateACKClusterParams:
+        NetworkPlugin: terway-eniip
+      Constraints:
+        InstanceTypeFamily:
+          - ecs.u1
+    AllowedValues:
+      - ecs.u1-c1m2.xlarge
+      - ecs.u1-c1m4.xlarge
+      - ecs.u1-c1m8.xlarge
+      - ecs.u1-c1m1.2xlarge
+      - ecs.u1-c1m2.2xlarge
+      - ecs.u1-c1m4.2xlarge
+      - ecs.u1-c1m8.2xlarge
+      - ecs.u1-c1m1.3xlarge
+      - ecs.u1-c1m2.3xlarge
+      - ecs.u1-c1m4.3xlarge
+      - ecs.u1-c1m8.3xlarge
+      - ecs.u1-c1m1.4xlarge
+      - ecs.u1-c1m2.4xlarge
+      - ecs.u1-c1m4.4xlarge
+      - ecs.u1-c1m8.4xlarge
+      - ecs.u1-c1m1.8xlarge
+      - ecs.u1-c1m2.8xlarge
+      - ecs.u1-c1m4.8xlarge
+      - ecs.u1-c1m8.8xlarge
+    Label:
+      en: Worker Instance Type
+      zh-cn: Worker 节点实例规格
+  WorkerSystemDiskSize:
+    Default: 120
+    Label: Worker节点系统盘大小(GB)
+    Type: Number
+    MinValue: 1
+  WorkerSystemDiskCategory:
+    Type: String
+    AssociationPropertyMetadata:
+      LocaleKey: DiskCategory
+      InstanceType: ${InstanceType}
+    Default: cloud_essd
+    AllowedValues:
+      - cloud_efficiency
+      - cloud_ssd
+      - cloud_essd
+  InstancePassword:
+    Default: Null
+    NoEcho: true
+    Type: String
+    Description:
+      en: Server login password, Length 8-30, must contain three(Capital letters, lowercase letters, numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special symbol in)
+      zh-cn: 服务器登录密码,长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ 中的特殊符号）
+    Label:
+      en: Instance Password
+      zh-cn: 实例密码
+    AllowedPattern: '[0-9A-Za-z\_\-\&:;''<>,=%`~!@#\(\)\$\^\*\+\|\{\}\[\]\.\?\/]+$'
+    ConstraintDescription:
+      en: Length 8-30, must contain three(Capital letters, lowercase letters, numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special symbol in)
+      zh-cn: 长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ 中的特殊符号）
+    AssociationProperty: ALIYUN::ECS::Instance::Password
+Resources:
+  VpcModule:
+    Version: v1
+    Type: MODULE::ACS::ComputeNest::VpcAndVSwitch
+    Properties:
+      EnableDualZones: true
+      VSwitchCidrBlockSecondary:
+        Ref: VSwitchCidrBlock2
+      VpcId:
+        Ref: VpcId
+      ZoneIdSecondary:
+        Ref: ZoneId2
+      VSwitchCidrBlock:
+        Ref: VSwitchCidrBlock1
+      VpcCidrBlock:
+        Ref: VpcCidrBlock
+      ZoneId:
+        Ref: ZoneId1
+      VSwitchIdSecondary:
+        Ref: VSwitchId2
+      VSwitchId:
+        Ref: VSwitchId1
+      VpcOption:
+        Ref: VpcOption
+  SuperOpsUser:
+    Type: 'ALIYUN::RAM::User'
+    Properties:
+      UserName:
+        'Fn::Join':
+        - '-'
+        - - SuperOps
+          - Ref: ALIYUN::StackName
+      Policies:
+      - PolicyName:
+          'Fn::Join':
+          - '-'
+          - - AsOpsPolicy
+            - Ref: 'ALIYUN::StackName'
+        PolicyDocument:
+          Version: '1'
+          Statement:
+          - Effect: Allow
+            Action:
+            - 'ots:*'
+            Resource:
+            - '*'
+          - Effect: Allow
+            Action:
+            - '*'
+            Resource:
+            - 'Fn::Sub':
+              - 'acs:oss:*:*:${BucketName}*'
+              - BucketName:
+                  Fn::Join:
+                    - '-'
+                    - - 'as'
+                      - Ref: ALIYUN::StackName
+  AccessKey:
+    Type: 'ALIYUN::RAM::AccessKey'
+    Properties:
+      UserName:
+        'Fn::GetAtt':
+        - SuperOpsUser
+        - UserName
+  AgentscopeSandboxServer:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn:
+      - PublicIngressResources
+    Properties:
+      ClusterId:
+        Fn::GetAtt:
+          - AckModule
+          - ClusterId
+      DefaultNamespace: default
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: agentscope-runtime-server
+              namespace: default
+              labels:
+                app: agentscope-runtime-server
+            spec:
+              replicas: 1
+              selector:
+                matchLabels:
+                  app: agentscope-runtime-server
+              template:
+                metadata:
+                  labels:
+                    app: agentscope-runtime-server
+                spec:
+                  containers:
+                    - name: agentscope-runtime-server
+                      image: compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/agentscope-sandbox-server:v0.1.6
+                      imagePullPolicy: Always
+                      ports:
+                        - containerPort: 8000
+                          name: http
+                      command:
+                        - /bin/bash
+                        - -c
+                        - |
+                          set -e
+                          echo "=== 初始配置 ==="
+                          cd /app
+
+                          as_studio
+
+                          # 启动应用并保持容器运行
+                          runtime-sandbox-server --config custom.env > /app/agentscope-runtime/sandbox.log 2>&1 &
+
+                          # 保持容器运行
+                          tail -f /app/agentscope-runtime/sandbox.log
+          - RegionId:
+              Ref: ALIYUN::Region
+            KubeConfig:
+              Fn::Replace:
+                - "\n": ''
+                - Fn::Base64Encode:
+                    Fn::GetAtt:
+                      - AckModule
+                      - ClusterPrivateKubeConfig
+            BearToken:
+              Ref: BearToken
+            RedisHost:
+              Fn::GetAtt:
+                - RedisInstance
+                - ConnectionDomain
+            RedisPassword:
+              Ref: RedisInstancePassword
+            AccessKey:
+              Fn::GetAtt:
+                - AccessKey
+                - AccessKeyId
+            SecretKey:
+              Fn::GetAtt:
+                - AccessKey
+                - AccessKeySecret
+            BucketName:
+              Fn::GetAtt:
+                - OSSBucket
+                - Name
+            Server:
+              Fn::GetAtt:
+                - PublicIngressResources
+                - Response
+            SandboxType:
+              Fn::Join:
+                - ','
+                - Ref: SandboxType
+            PoolSize:
+              Ref: PoolSize
+  AgentscopeSandboxService:
+    Type: ALIYUN::CS::ClusterApplication
+    DependsOn:
+      - AckModule
+    Properties:
+      ClusterId:
+        Fn::GetAtt:
+          - AckModule
+          - ClusterId
+      DefaultNamespace: default
+      YamlContent:
+        Fn::Sub:
+          - |
+            apiVersion: v1
+            kind: Service
+            metadata:
+              name: agentscope-sandbox-server-service
+              annotations:
+                service.beta.kubernetes.io/alibaba-cloud-loadbalancer-ip-version: ipv4
+                service.beta.kubernetes.io/alibaba-cloud-loadbalancer-address-type: internet
+                service.beta.kubernetes.io/alibaba-cloud-loadbalancer-bandwidth: "100"
+            spec:
+              type: LoadBalancer
+              selector:
+                app: agentscope-runtime-server
+              ports:
+                - name: agentscope-sandbox-server-service
+                  protocol: TCP
+                  port: 8000
+                  targetPort: 8000
+          - Namespace: default
+  Sleep:
+    Type: ALIYUN::ROS::Sleep
+    DependsOn:
+      - AgentscopeSandboxService
+    Properties:
+      CreateDuration: 60
+  PublicIngressResources:
+    Type: DATASOURCE::CS::ClusterApplicationResources
+    DependsOn:
+      - Sleep
+    Properties:
+      Namespace: default
+      Kind: Service
+      FirstMatch: True
+      ApiVersion: v1
+      JsonPath: $.status.loadBalancer.ingress[0].ip
+      ClusterId:
+        Fn::GetAtt:
+          - AckModule
+          - ClusterId
+      Name: agentscope-sandbox-server-service
+  AckModule:
+    Version: default
+    Type: MODULE::SHARE::1853370294850618::AckOrAcsCluster
+    Properties:
+      EnableDualZones: true
+      EnableAutoScaling:
+        Ref: AutoScalingOption
+      PayType:
+        Ref: PayType
+      PayPeriod:
+        Ref: PayPeriod
+      PayPeriodUnit:
+        Ref: PayPeriodUnit
+      CsOptions: NewAck
+      VpcId:
+        Fn::GetAtt:
+          - VpcModule
+          - VpcId
+      ServiceCidr:
+        Ref: ServiceCidr
+      WorkerInstanceTypes:
+        Ref: InstanceType
+      ZoneIdSecondary:
+        Ref: ZoneId2
+      ClusterId:
+        Ref: ClusterId
+      ZoneId:
+        Ref: ZoneId1
+      WorkerSystemDiskSize:
+        Ref: WorkerSystemDiskSize
+      AckNetworkPlugin:
+        Ref: AckNetworkPlugin
+      VSwitchIdSecondary:
+        Fn::GetAtt:
+          - VpcModule
+          - VSwitchIdSecondary
+      VSwitchId:
+        Fn::GetAtt:
+          - VpcModule
+          - VSwitchId
+      PodVSwitchId:
+        Fn::GetAtt:
+          - VpcModule
+          - VSwitchId
+      PodVSwitchIdSecondary:
+        Fn::GetAtt:
+          - VpcModule
+          - VSwitchIdSecondary
+      WorkerSystemDiskCategory:
+        Ref: WorkerSystemDiskCategory
+      LoginPassword:
+        Ref: InstancePassword
+      WorkerInstanceCount:
+        Ref: WorkerInstanceCount
+      WorkerInstanceMinCount:
+        Ref: WorkerInstanceMinCount
+      WorkerInstanceMaxCount:
+        Ref: WorkerInstanceMaxCount
+  ACKAddons:
+    Type: ALIYUN::CS::ClusterAddons
+    Properties:
+      ClusterId:
+        Fn::GetAtt:
+          - AckModule
+          - ClusterId
+      InstalledIgnore: true
+      Addons:
+        - Name: nginx-ingress-controller
+        - Name: logtail-ds
+          Config: '{"IngressDashboardEnabled":"true"}'
+Outputs:
+  AgentScope Studio 服务器地址:
+    Label: AgentScope Studio 服务器地址
+    Value:
+      Fn::Sub:
+        - 'http://${ServerAddress}:3000'
+        - ServerAddress:
+            Fn::GetAtt:
+            - PublicIngressResources
+            - Response
+Metadata:
+  ALIYUN::ROS::Interface:
+    Hidden:
+      - BearToken
+    ParameterGroups:
+      - Parameters:
+          - PayType
+          - PayPeriodUnit
+          - PayPeriod
+        Label:
+          default:
+            en: PayType Configuration
+            zh-cn: 付费类型配置
+      - Parameters:
+          - InstanceType
+          - WorkerSystemDiskCategory
+          - WorkerSystemDiskSize
+          - InstancePassword
+          - AutoScalingOption
+          - WorkerInstanceCount
+          - WorkerInstanceMinCount
+          - WorkerInstanceMaxCount
+          - AckNetworkPlugin
+          - ServiceCidr
+          - PodCidr
+        Label:
+          default:
+            en: Kubernetes Configuration
+            zh-cn: Kubernetes配置
+      - Parameters:
+          - RedisInstancePassword
+        Label:
+          default:
+            en: Redis Database Configuration
+            zh-cn: Redis数据库配置
+      - Parameters:
+          - VpcOption
+          - ZoneId1
+          - ZoneId2
+          - VpcCidrBlock
+          - VSwitchCidrBlock1
+          - VSwitchCidrBlock2
+          - VpcId
+          - VSwitchId1
+          - VSwitchId2
+        Label:
+          default:
+            zh-cn: 基础配置
+            en: Basic Configuration
+      - Parameters:
+          - SandboxType
+          - PoolSize
+        Label:
+          default:
+            zh-cn: 沙箱配置
+            en: Sandbox Configuration

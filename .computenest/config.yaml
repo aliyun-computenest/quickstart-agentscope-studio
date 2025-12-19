@@ -8,46 +8,109 @@ Service:
           ArtifactId: ${Artifact.Artifact_1.ArtifactId}
           ArtifactVersion: ${Artifact.Artifact_1.ArtifactVersion}
       SupplierTemplateConfigs:
-      - Name: 模板1
-        Url: ros_templates/template.yaml
-        PredefinedParameters: []
+        - Name: 单机版
+          Url: ros_templates/template.yaml
+          PredefinedParameters: []
+          AllowedRegions:
+            - cn-qingdao
+            - cn-beijing
+            - cn-zhangjiakou
+            - cn-huhehaote
+            - cn-wulanchabu
+            - cn-hangzhou
+            - cn-shanghai
+            - cn-shenzhen
+            - cn-heyuan
+            - cn-guangzhou
+            - cn-wuhan-lr
+            - cn-chengdu
+        - Name: 已有ACK部署
+          Url: ros_templates/ack.yaml
+          PredefinedParameters: []
+          AllowedRegions:
+            - cn-qingdao
+            - cn-beijing
+            - cn-zhangjiakou
+            - cn-huhehaote
+            - cn-wulanchabu
+            - cn-hangzhou
+            - cn-shanghai
+            - cn-shenzhen
+            - cn-heyuan
+            - cn-guangzhou
+            - cn-wuhan-lr
+            - cn-chengdu
     TemplateConfigs:
-    - Name: 模板1
-      Url: ros_templates/template.yaml
-      PredefinedParameters: []
-      DeployScene: ECS
-      OutputConfigs:
-      - OutputKey: Server Addresses
-        EnableWebProxy: true
-      - OutputKey: Server Private Addresses
-        EnableWebProxy: true
+      - Name: 单机版
+        Url: ros_templates/template.yaml
+        AllowedRegions:
+          - cn-qingdao
+          - cn-beijing
+          - cn-zhangjiakou
+          - cn-huhehaote
+          - cn-wulanchabu
+          - cn-hangzhou
+          - cn-shanghai
+          - cn-shenzhen
+          - cn-heyuan
+          - cn-guangzhou
+          - cn-wuhan-lr
+          - cn-chengdu
+        PredefinedParameters: []
+        ArchitectureDiagramUrl: 
+          https://service-info-private.oss-cn-hangzhou.aliyuncs.com/1853370294850618/architecture/47f4f606-bfe9-479b-ab83-939cd130783d.jpg?Expires=1766212379&OSSAccessKeyId=LTAI5tCYphFhocJemeMWmXst&Signature=wnPq6ICVPWh2yW0oAto3HoF62RU%3D
+        DeployScene: ECS
+        OutputConfigs:
+          - OutputKey: Server Addresses
+            EnableWebProxy: true
+          - OutputKey: Server Private Addresses
+            EnableWebProxy: true
+      - Name: 已有ACK部署
+        Url: ros_templates/ack.yaml
+        AllowedRegions:
+          - cn-qingdao
+          - cn-beijing
+          - cn-zhangjiakou
+          - cn-huhehaote
+          - cn-wulanchabu
+          - cn-hangzhou
+          - cn-shanghai
+          - cn-shenzhen
+          - cn-heyuan
+          - cn-guangzhou
+          - cn-wuhan-lr
+          - cn-chengdu
+        PredefinedParameters: []
+        DeployScene: ACK_EXIST
+        OutputConfigs:
+          - OutputKey: AgentScope Studio 服务器地址
+            EnableWebProxy: true
     NetworkMetadata:
       EnablePrivateVpcConnection: false
       EnableReversePrivateVpcConnection: false
     ServiceInstanceNameRule:
-      UseDefaultValue: false
+      Prefix: AgentScopeStudio-
+      UseDefaultValue: true
   OperationMetadata:
     SupportBackup: false
     PrometheusConfigMap:
-      模板1:
+      单机版:
+        EnablePrometheus: false
+      已有ACK部署:
         EnablePrometheus: false
   ServiceType: private
   ServiceInfo:
     Locale: zh-CN
-    ShortDescription: AgentScope Studio 
-      是一个强大的本地可视化工具包，用于开发代理应用程序，支持项目管理、运行时可视化、跟踪和代理评估。
+    ShortDescription: AgentScope Studio 是一个强大的本地可视化工具包，用于开发代理应用程序，支持项目管理、运行时可视化、跟踪和代理评估。
     Image: resources/icons/service_logo.png
-    Name: AgentScopeStudio社区版
-    Softwares:
-    - Name: agentscope-studio
-      Version: v1.0.7
+    Name: AgentScope Studio 社区版
   ShareType: Public
   ApprovalType: Manual
 Artifact:
   Artifact_1:
     ArtifactType: EcsImage
     ArtifactName: agentscopestudio
-    Description: agentscopestudio
+    Description: AgentScopeStudio
     ArtifactProperty:
       RegionId: ${ImageBuilder.EcsImage.RegionId}
       ImageId: ${ImageBuilder.EcsImage.SourceImageId}
@@ -56,7 +119,7 @@ ImageBuilder:
     RegionId: ap-southeast-1
     SourceImageId: ubuntu_24_04_x64_20G_alibase_20250916.vhd
     SystemDiskSize: 40
-    InstanceType: ecs.c7.2xlarge
+    InstanceType: ecs.e-c1m2.xlarge
     InternetMaxBandwidthOut: 100
     CommandType: RunShellScript
     Timeout: 10800

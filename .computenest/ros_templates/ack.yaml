@@ -434,7 +434,7 @@ Resources:
                 spec:
                   containers:
                     - name: agentscope-runtime-server
-                      image: compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/agentscope-sandbox-server:v0.1.6
+                      image: ImageUrl：compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/agent-scope-studio:1.0.7
                       imagePullPolicy: Always
                       ports:
                         - containerPort: 8000

@@ -8,19 +8,19 @@ Service:
           ArtifactId: ${Artifact.Artifact_1.ArtifactId}
           ArtifactVersion: ${Artifact.Artifact_1.ArtifactVersion}
       SupplierTemplateConfigs:
-        - Name: 模板1
-          Url: ros_templates/template.yaml
-          PredefinedParameters: []
-    TemplateConfigs:
       - Name: 模板1
         Url: ros_templates/template.yaml
         PredefinedParameters: []
-        DeployScene: ECS
-        OutputConfigs:
-          - OutputKey: Server Addresses
-            EnableWebProxy: true
-          - OutputKey: Server Private Addresses
-            EnableWebProxy: true
+    TemplateConfigs:
+    - Name: 模板1
+      Url: ros_templates/template.yaml
+      PredefinedParameters: []
+      DeployScene: ECS
+      OutputConfigs:
+      - OutputKey: Server Addresses
+        EnableWebProxy: true
+      - OutputKey: Server Private Addresses
+        EnableWebProxy: true
     NetworkMetadata:
       EnablePrivateVpcConnection: false
       EnableReversePrivateVpcConnection: false
@@ -34,9 +34,13 @@ Service:
   ServiceType: private
   ServiceInfo:
     Locale: zh-CN
-    ShortDescription: AgentScope Studio 是一个强大的本地可视化工具包，用于开发代理应用程序，支持项目管理、运行时可视化、跟踪和代理评估。
+    ShortDescription: AgentScope Studio 
+      是一个强大的本地可视化工具包，用于开发代理应用程序，支持项目管理、运行时可视化、跟踪和代理评估。
     Image: resources/icons/service_logo.png
     Name: AgentScopeStudio社区版
+    Softwares:
+    - Name: agentscope-studio
+      Version: v1.0.7
   ShareType: Public
   ApprovalType: Manual
 Artifact:
@@ -56,36 +60,36 @@ ImageBuilder:
     InternetMaxBandwidthOut: 100
     CommandType: RunShellScript
     Timeout: 10800
-    Tags: [ ]
+    Tags: []
     CommandContent: |-
-        #!/bin/bash
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-        export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # 立即加载 NVM
-        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # 加载自动补全
-        sudo nvm install --lts
-        sudo npm install -g @agentscope/studio
+      #!/bin/bash
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # 立即加载 NVM
+      [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # 加载自动补全
+      sudo nvm install --lts
+      sudo npm install -g @agentscope/studio
 
-        sudo cat > /usr/lib/systemd/system/agentscopestudio.service << SERVICE_EOF
-        [Unit]
-        Description=Application init service
-        Wants=cloud-final.service
-        Requires=network-online.target
-        After=network-online.target cloud-final.service
+      sudo cat > /usr/lib/systemd/system/agentscopestudio.service << SERVICE_EOF
+      [Unit]
+      Description=Application init service
+      Wants=cloud-final.service
+      Requires=network-online.target
+      After=network-online.target cloud-final.service
 
-        [Service]
-        Environment="PATH=/root/.nvm/versions/node/v22.21.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-        ExecStart=/root/.nvm/versions/node/v22.21.0/bin/as_studio
-        RemainAfterExit=false
-        KillMode=control-group
-        Restart=Always
-        WorkingDirectory=/root
+      [Service]
+      Environment="PATH=/root/.nvm/versions/node/v22.21.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      ExecStart=/root/.nvm/versions/node/v22.21.0/bin/as_studio
+      RemainAfterExit=false
+      KillMode=control-group
+      Restart=Always
+      WorkingDirectory=/root
 
-        [Install]
-        WantedBy=multi-user.target
+      [Install]
+      WantedBy=multi-user.target
 
-        SERVICE_EOF
+      SERVICE_EOF
 
-        sudo systemctl daemon-reload
-        sudo systemctl enable agentscopestudio.service
-        sudo systemctl start agentscopestudio.service
+      sudo systemctl daemon-reload
+      sudo systemctl enable agentscopestudio.service
+      sudo systemctl start agentscopestudio.service

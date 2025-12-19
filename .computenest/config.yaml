@@ -119,7 +119,7 @@ ImageBuilder:
     RegionId: ap-southeast-1
     SourceImageId: ubuntu_24_04_x64_20G_alibase_20250916.vhd
     SystemDiskSize: 40
-    InstanceType: ecs.e-c1m2.xlarge
+    InstanceType: ecs.c9i.xlarge
     InternetMaxBandwidthOut: 100
     CommandType: RunShellScript
     Timeout: 10800

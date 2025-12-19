@@ -116,7 +116,7 @@ Artifact:
       ImageId: ${ImageBuilder.EcsImage.SourceImageId}
 ImageBuilder:
   EcsImage:
-    RegionId: ap-southeast-1
+    RegionId: cn-hongkong
     SourceImageId: ubuntu_24_04_x64_20G_alibase_20250916.vhd
     SystemDiskSize: 40
     InstanceType: ecs.c9i.xlarge

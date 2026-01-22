@@ -418,26 +418,26 @@ Resources:
             apiVersion: apps/v1
             kind: Deployment
             metadata:
-              name: agentscope-runtime-server
+              name: agentscope-studio-server
               namespace: default
               labels:
-                app: agentscope-runtime-server
+                app: agentscope-studio-server
             spec:
               replicas: 1
               selector:
                 matchLabels:
-                  app: agentscope-runtime-server
+                  app: agentscope-studio-server
               template:
                 metadata:
                   labels:
-                    app: agentscope-runtime-server
+                    app: agentscope-studio-server
                 spec:
                   containers:
-                    - name: agentscope-runtime-server
-                      image: ImageUrl：compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/agent-scope-studio:1.0.7
+                    - name: agentscope-studio-server
+                      image: ImageUrl：compute-nest-registry.cn-hangzhou.cr.aliyuncs.com/computenest/agent-scope-studio:1.0.8
                       imagePullPolicy: Always
                       ports:
-                        - containerPort: 8000
+                        - containerPort: 3000
                           name: http
                       command:
                         - /bin/bash
@@ -449,11 +449,6 @@ Resources:
 
                           as_studio
 
-                          # 启动应用并保持容器运行
-                          runtime-sandbox-server --config custom.env > /app/agentscope-runtime/sandbox.log 2>&1 &
-
-                          # 保持容器运行
-                          tail -f /app/agentscope-runtime/sandbox.log
           - RegionId:
               Ref: ALIYUN::Region
             KubeConfig:
@@ -517,12 +512,12 @@ Resources:
             spec:
               type: LoadBalancer
               selector:
-                app: agentscope-runtime-server
+                app: agentscope-studio-server
               ports:
                 - name: agentscope-sandbox-server-service
                   protocol: TCP
-                  port: 8000
-                  targetPort: 8000
+                  port: 3000
+                  targetPort: 3000
           - Namespace: default
   Sleep:
     Type: ALIYUN::ROS::Sleep

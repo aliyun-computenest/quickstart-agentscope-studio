@@ -23,8 +23,8 @@ Service:
         PredefinedParameters: []
         DeployScene: ACK_EXIST
       OutputConfigs:
-      - OutputKey: AgentScope Studio 服务器地址
-        EnableWebProxy: true
+        - OutputKey: AgentScope Studio 服务器地址
+          EnableWebProxy: true
     NetworkMetadata:
       EnablePrivateVpcConnection: false
       EnableReversePrivateVpcConnection: false

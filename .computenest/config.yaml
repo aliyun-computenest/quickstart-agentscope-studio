@@ -11,73 +11,17 @@ Service:
         - Name: 单机版
           Url: ros_templates/template.yaml
           PredefinedParameters: []
-          AllowedRegions:
-            - cn-qingdao
-            - cn-beijing
-            - cn-zhangjiakou
-            - cn-huhehaote
-            - cn-wulanchabu
-            - cn-hangzhou
-            - cn-shanghai
-            - cn-shenzhen
-            - cn-heyuan
-            - cn-guangzhou
-            - cn-wuhan-lr
-            - cn-chengdu
-            - cn-hongkong
         - Name: 已有ACK部署
           Url: ros_templates/ack.yaml
           PredefinedParameters: []
-          AllowedRegions:
-            - cn-qingdao
-            - cn-beijing
-            - cn-zhangjiakou
-            - cn-huhehaote
-            - cn-wulanchabu
-            - cn-hangzhou
-            - cn-shanghai
-            - cn-shenzhen
-            - cn-heyuan
-            - cn-guangzhou
-            - cn-wuhan-lr
-            - cn-chengdu
-            - cn-hongkong
     TemplateConfigs:
       - Name: 单机版
         Url: ros_templates/template.yaml
-        AllowedRegions:
-          - cn-qingdao
-          - cn-beijing
-          - cn-zhangjiakou
-          - cn-huhehaote
-          - cn-wulanchabu
-          - cn-hangzhou
-          - cn-shanghai
-          - cn-shenzhen
-          - cn-heyuan
-          - cn-guangzhou
-          - cn-wuhan-lr
-          - cn-chengdu
-          - cn-hongkong
         PredefinedParameters: []
       - Name: 已有ACK部署
         Url: ros_templates/ack.yaml
-        AllowedRegions:
-          - cn-qingdao
-          - cn-beijing
-          - cn-zhangjiakou
-          - cn-huhehaote
-          - cn-wulanchabu
-          - cn-hangzhou
-          - cn-shanghai
-          - cn-shenzhen
-          - cn-heyuan
-          - cn-guangzhou
-          - cn-wuhan-lr
-          - cn-chengdu
-          - cn-hongkong
         PredefinedParameters: []
-      DeployScene: ACK_EXIST
+        DeployScene: ACK_EXIST
       OutputConfigs:
       - OutputKey: AgentScope Studio 服务器地址
         EnableWebProxy: true
@@ -103,7 +47,7 @@ Service:
     Name: AgentScope Studio 社区版
     Softwares:
     - Name: agentscope-studio
-      Version: v1.0.7
+      Version: v1.0.8
   ShareType: Public
   ApprovalType: Manual
 Artifact:
@@ -111,27 +55,13 @@ Artifact:
     ArtifactType: EcsImage
     ArtifactName: agentscopestudio
     Description: agentscopestudio
-    SupportRegionIds:
-    - cn-qingdao
-    - cn-beijing
-    - cn-zhangjiakou
-    - cn-huhehaote
-    - cn-wulanchabu
-    - cn-hangzhou
-    - cn-shanghai
-    - cn-shenzhen
-    - cn-heyuan
-    - cn-guangzhou
-    - cn-wuhan-lr
-    - cn-chengdu
-    - cn-hongkong
     ArtifactBuildProperty:
       CodeRepo:
         Platform: github
         Owner: LYH-RAIN
         RepoName: aliyun-computenest/quickstart-LobeChat
         Branch: main
-      RegionId: ap-hongkong
+      RegionId: cn-hongkong
       CommandType: RunShellScript
       CommandContent: |-
         #!/bin/bash

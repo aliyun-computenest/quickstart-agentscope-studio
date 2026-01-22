@@ -134,34 +134,41 @@ Artifact:
       RegionId: ap-hongkong
       CommandType: RunShellScript
       CommandContent: |-
-      #!/bin/bash
-      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-      export NVM_DIR="$HOME/.nvm"
-      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # 立即加载 NVM
-      [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # 加载自动补全
-      sudo nvm install --lts
-      sudo npm install -g @agentscope/studio
+        #!/bin/bash
+        set -e
 
-      sudo cat > /usr/lib/systemd/system/agentscopestudio.service << SERVICE_EOF
-      [Unit]
-      Description=Application init service
-      Wants=cloud-final.service
-      Requires=network-online.target
-      After=network-online.target cloud-final.service
+        sudo yum install -y curl gnupg
 
-      [Service]
-      Environment="PATH=/root/.nvm/versions/node/v22.21.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-      ExecStart=/root/.nvm/versions/node/v22.21.0/bin/as_studio
-      RemainAfterExit=false
-      KillMode=control-group
-      Restart=Always
-      WorkingDirectory=/root
+        curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
 
-      [Install]
-      WantedBy=multi-user.target
+        sudo yum install -y nodejs
 
-      SERVICE_EOF
+        sudo npm install -g @agentscope/studio
 
-      sudo systemctl daemon-reload
-      sudo systemctl enable agentscopestudio.service
-      sudo systemctl start agentscopestudio.service
+        AS_STUDIO_PATH=$(which as_studio)
+        if [ -z "$AS_STUDIO_PATH" ]; then
+          echo "as_studio not found"
+          exit 1
+        fi
+
+        # 创建 systemd 服务
+        sudo tee /etc/systemd/system/agentscope-studio.service > /dev/null <<EOF
+        [Unit]
+        Description=AgentScope Studio Service
+        After=network.target
+
+        [Service]
+        Type=simple
+        User=root
+        WorkingDirectory=/root
+        ExecStart=$AS_STUDIO_PATH
+        Restart=always
+        RestartSec=10
+        Environment=NODE_ENV=production
+
+        [Install]
+        WantedBy=multi-user.target
+        EOF
+
+        sudo systemctl daemon-reload
+        sudo systemctl enable --now agentscope-studio.service

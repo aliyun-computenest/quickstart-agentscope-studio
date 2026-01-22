@@ -322,7 +322,7 @@ Resources:
       Sync: true
       Timeout: 3600
       CommandContent: |-
-          systemctl start agentscopestudio
+          systemctl start agentscope-studio
 Outputs:
   Server Addresses:
     Description:
